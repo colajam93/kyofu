@@ -131,6 +131,13 @@ def scan(args):
             hp = library.path / h
             if not hp.exists():
                 raise FileNotFoundError(hp)
+    else:
+        try:
+            ok = input('Full scan may take very long time. Continue? [y/N] ').strip().lower()
+            if ok != 'y':
+                return
+        except EOFError:
+            return
 
     _full_sync(library, overwrite, path_hint)
 
