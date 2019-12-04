@@ -71,12 +71,13 @@ class Song(Base):
     library = relationship('Library', back_populates='song')
 
     @staticmethod
-    def get_by_path(path: Path, required: bool = False) -> 'Song':
+    def get_by_path(path: Path, library: Library, required: bool = False) -> 'Song':
         from kyofu import session
         from kyofu.exceptions import EntityNotFoundError
 
         query = session.query(Song)
         query = query.filter(Song.file_path == str(path))
+        query = query.filter(Song.library_id == library.library_id)
         result = query.first()
 
         if not result and required:

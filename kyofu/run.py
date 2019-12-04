@@ -100,7 +100,7 @@ def _full_sync(library: Library, overwrite: bool = False, path_hint: Iterable[st
         dp = Path(p)
         if not dp.exists():
             logger.info(f'Deleted: path={p}')
-            session.delete(Song.get_by_path(dp))
+            session.delete(Song.get_by_path(dp, library, required=True))
 
     session.commit()
 
