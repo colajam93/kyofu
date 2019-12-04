@@ -1,14 +1,18 @@
 import pickle
-from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, asdict
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
 from mutagen import File
 
 from kyofu import logger
+from kyofu.exceptions import KyofuError
+
+
+class MetadataError(KyofuError):
+    pass
 
 
 @dataclass
@@ -31,9 +35,26 @@ class SongMetadata:
 
 @dataclass
 class FileMetadata:
-    path: str
+    _DUMP_FILE_EXTENSION = '.pickle'
+
+    raw_path: Path
     file_type: str
-    modified_at: datetime
+    modified: datetime
+
+    @property
+    def raw_path_str(self):
+        return str(self.raw_path)
+
+    @property
+    def is_dump_file(self):
+        return self.raw_path_str.endswith(self._DUMP_FILE_EXTENSION)
+
+    @property
+    def path(self):
+        if self.is_dump_file:
+            return Path(self.raw_path_str[:len(self.raw_path_str) - len(self._DUMP_FILE_EXTENSION)])
+        else:
+            return self.raw_path
 
 
 @dataclass
@@ -54,71 +75,38 @@ def _guess_file_type(file: File) -> str:
         return file.mime[0]
 
 
-def _get_number(num: str) -> int:
-    return int(num.split('/')[0])
+def _as_fraction(num: str) -> Fraction:
+    if '/' in num:
+        n, d, *_ = num.split('/')
+        return Fraction(int(n), int(d))
+    else:
+        return Fraction(int(num), 1)
 
 
-class MetadataExtractable(metaclass=ABCMeta):
-    def __init__(self, path: Path):
+def _as_year(date: str) -> int:
+    try:
+        return int(date[:4])
+    except ValueError as e:
+        raise MetadataError(f'parse year failed: error={e}')
+
+
+class MetadataExtractor:
+    def __init__(self, file: File, path: Path, file_type: str):
         self.path = path
-
-    @property
-    @abstractmethod
-    def file_type(self) -> str:
-        pass
-
-    @abstractmethod
-    def as_metadata(self) -> Metadata:
-        pass
-
-    def as_file_metadata(self) -> FileMetadata:
-        return FileMetadata(
-            path=str(self.path.resolve()),
-            file_type=self.file_type,
-            modified_at=datetime.fromtimestamp(self.path.stat().st_mtime)
-        )
-
-
-class MP3MetadataExtractor(MetadataExtractable):
-    file_type = 'mp3'
-
-    def __init__(self, file: File, path: Path) -> None:
-        super().__init__(path)
-        self.file: File = file
-
-    def _extract_field(self, key: str, required=False) -> str:
-        result = self.file.tags.get(key)
-        if required and not result:
-            logger.error('missing field: key=%s' % key)
-            return ''
-        if not result:
-            logger.info('missing field: key=%s' % key)
-            return ''
-
-        if len(result) > 1:
-            logger.warning('multiple values found: key=%s' % key)
-
-        return result[0]
-
-    @staticmethod
-    def _as_fraction(num: str) -> Fraction:
-        if '/' in num:
-            n, d, *_ = num.split('/')
-            return Fraction(int(n), int(d))
-        else:
-            return Fraction(int(num), 1)
+        self.file = file
+        self.file_type = file_type
 
     @property
     def disc_number(self) -> int:
         field = self._extract_field('discnumber')
         if field:
-            return self._as_fraction(field).numerator
+            return _as_fraction(field).numerator
         return 1
 
     @property
     def track_number(self) -> int:
         field = self._extract_field('tracknumber', required=True)
-        return self._as_fraction(field).numerator
+        return _as_fraction(field).numerator
 
     @property
     def title(self) -> str:
@@ -134,7 +122,8 @@ class MP3MetadataExtractor(MetadataExtractable):
 
     @property
     def album_artist(self) -> Optional[str]:
-        return self._extract_field('album_artist')
+        field = self._extract_field('albumartist')
+        return field if field else None
 
     @property
     def genre(self) -> str:
@@ -142,7 +131,7 @@ class MP3MetadataExtractor(MetadataExtractable):
 
     @property
     def year(self) -> int:
-        return int(self._extract_field('date', required=True))
+        return _as_year(self._extract_field('date', required=True))
 
     def as_metadata(self) -> Metadata:
         title = self.title
@@ -171,73 +160,34 @@ class MP3MetadataExtractor(MetadataExtractable):
             file=file_metadata,
         )
 
-
-class FLACMetadataExtractor(MetadataExtractable):
-    file_type = 'flac'
-
-    def __init__(self, file: File, path: Path) -> None:
-        super().__init__(path)
-        self.file = file
-
-    def _extract_field(self, key: str, required=False, default=None) -> str:
+    def _extract_field(self, key: str, required=False) -> str:
         result = self.file.tags.get(key)
         if required and not result:
-            logger.error('missing field: key=%s' % key)
-            return ''
+            raise MetadataError('missing field: key=%s' % key)
         if not result:
-            if default:
-                return default
-            else:
-                logger.info('missing field: key=%s' % key)
-                return ''
+            return ''
 
         if len(result) > 1:
             logger.warning('multiple values found: key=%s' % key)
 
         return result[0]
 
-    def as_metadata(self) -> Metadata:
-        title = self._extract_field('title', required=True)
-        album = self._extract_field('album', required=True)
-        artist = self._extract_field('artist', required=True)
-        album_artist = self._extract_field('album_artist')
-        genre = self._extract_field('genre', required=True)
-        track_number = _get_number(self._extract_field('tracknumber', required=True))
-        disc_number = _get_number(self._extract_field('discnumber', default='1'))
-        year = _get_number(self._extract_field('date', required=True))
-
-        song_metadata = SongMetadata(
-            title=title,
-            album=album,
-            artist=artist,
-            album_artist=album_artist,
-            genre=genre,
-            track_number=track_number,
-            disc_number=disc_number,
-            year=year
-        )
-
-        return Metadata(
-            song=song_metadata,
-            file=self.as_file_metadata()
+    def as_file_metadata(self) -> FileMetadata:
+        return FileMetadata(
+            raw_path=self.path.resolve(),
+            file_type=self.file_type,
+            modified=datetime.fromtimestamp(self.path.stat().st_mtime)
         )
 
 
-class AACMetadaExtractor(MetadataExtractable):
-    file_type = 'aac'
-
-    def __init__(self, file: File, path: Path) -> None:
-        super().__init__(path)
-        self.file = file
-
-    def as_metadata(self) -> Metadata:
-        pass
-
-
-def load_metadata(path: Path) -> Optional[Metadata]:
+def _load_metadata(path: Path) -> Optional[Metadata]:
     if path.suffix == '.pickle':
         with path.open('rb') as f:
-            guessed_file = pickle.load(f)
+            try:
+                guessed_file = pickle.load(f)
+            except Exception as e:
+                logger.warning(f'failed to load pickle: path={path} error={e}')
+                return None
     else:
         with path.open('rb') as f:
             guessed_file = File(f, easy=True)
@@ -245,19 +195,27 @@ def load_metadata(path: Path) -> Optional[Metadata]:
             logger.warning('Failed to guess file type: %s' % path)
             return None
 
-    logger.info(guessed_file.tags)
-
     if 'audio/mp3' in guessed_file.mime:
-        metadata = MP3MetadataExtractor(guessed_file, path).as_metadata()
+        metadata = MetadataExtractor(guessed_file, path, 'mp3').as_metadata()
     elif 'audio/flac' in guessed_file.mime:
-        metadata = FLACMetadataExtractor(guessed_file, path).as_metadata()
+        metadata = MetadataExtractor(guessed_file, path, 'flac').as_metadata()
     elif 'audio/aac' in guessed_file.mime:
-        metadata = AACMetadaExtractor(guessed_file, path).as_metadata()
+        metadata = MetadataExtractor(guessed_file, path, 'aac').as_metadata()
     else:
         logger.error('Unknown file type %s' % guessed_file.mime)
         return None
 
-    logger.info(asdict(metadata))
+    return metadata
+
+
+def load_metadata(path: Path) -> Optional[Metadata]:
+    from kyofu import logger
+
+    try:
+        return _load_metadata(path)
+    except Exception as e:
+        logger.warning(f'Failed to load metadata: path={path}, error={e}')
+        return None
 
 
 def _parse_args() -> Namespace:
@@ -270,7 +228,8 @@ def _main() -> None:
     args = _parse_args()
     target_path = Path(args.file)
     try:
-        load_metadata(target_path)
+        metadata = load_metadata(target_path)
+        print(asdict(metadata))
     except Exception as e:
         logger.error(f'path={target_path} exception={e}')
 

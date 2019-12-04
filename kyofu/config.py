@@ -9,15 +9,9 @@ logger_config = {
     'filters': {
     },
     'handlers': {
-        'stderr': {
-            'class': 'logging.StreamHandler',
-            'level': 'WARN',
-            'formatter': 'default',
-            'stream': 'ext://sys.stderr',
-        },
         'stdout': {
             'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
+            'level': 'INFO',
             'formatter': 'default',
             'stream': 'ext://sys.stdout',
         },
@@ -29,7 +23,7 @@ logger_config = {
     'loggers': {
         'kyofu': {
             'level': 'DEBUG',
-            'handlers': ['stdout', 'stderr']
+            'handlers': ['stdout'],
         }
     },
     'root': {
@@ -37,3 +31,4 @@ logger_config = {
         'handlers': ['null'],
     },
 }
+
