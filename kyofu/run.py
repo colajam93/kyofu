@@ -8,6 +8,7 @@ def parse_args():
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
+    parser.add_argument('--yes', '-y', action='store_true')
     subparsers = parser.add_subparsers(required=True, dest='sub_command')
 
     init_parser = subparsers.add_parser('init')
@@ -24,6 +25,11 @@ def parse_args():
     update_parser = subparsers.add_parser('update')
     update_parser.add_argument('library_name')
     update_parser.set_defaults(func=update)
+
+    delete_parser = subparsers.add_parser('delete')
+    delete_parser.add_argument('library_name')
+    delete_parser.add_argument('--prefix', '-p', action='append', required=True)
+    delete_parser.set_defaults(func=delete)
 
     return parser.parse_args()
 
@@ -66,7 +72,7 @@ def _full_scan(path: Path, path_hint: Iterable[str]) -> Iterable[Path]:
 
 def _full_sync(library: Library, overwrite: bool = False, path_hint: Iterable[str] = None):
     from kyofu.metadata import load_metadata
-    from kyofu import session, logger
+    from kyofu import session
     from sqlalchemy import or_
 
     if path_hint:
@@ -89,17 +95,17 @@ def _full_sync(library: Library, overwrite: bool = False, path_hint: Iterable[st
             exists.add(str(relative_path))
             if overwrite:
                 _import_song(library, metadata, song=imported.get(str(relative_path)))
-                logger.info(f'Force updated: path={p}')
+                print(f'Force updated: path={p}')
         else:
             song = _import_song(library, metadata)
-            logger.info(f'Added: path={p}')
+            print(f'Added: path={p}')
             session.add(song)
 
     deleted = set(imported.keys()) - exists
     for p in deleted:
         dp = Path(p)
         if not dp.exists():
-            logger.info(f'Deleted: path={p}')
+            print(f'Deleted: path={p}')
             session.delete(Song.get_by_path(dp, library, required=True))
 
     session.commit()
@@ -119,7 +125,7 @@ def init(args):
 
 
 def scan(args):
-    from kyofu.model import Library
+    from kyofu.util import show_proceed_prompt
 
     name = args.library_name
     overwrite = args.overwrite_song
@@ -132,11 +138,7 @@ def scan(args):
             if not hp.exists():
                 raise FileNotFoundError(hp)
     else:
-        try:
-            ok = input('Full scan may take very long time. Continue? [y/N] ').strip().lower()
-            if ok != 'y':
-                return
-        except EOFError:
+        if not show_proceed_prompt('Full scan may take very long time. Continue?'):
             return
 
     _full_sync(library, overwrite, path_hint)
@@ -183,20 +185,55 @@ def update(args):
     for path in _diff_scan(library):
         metadata = load_metadata(path)
         relative_path = library.relative_path(path)
-        song = Song.get_by_path(relative_path)
+        song = Song.get_by_path(relative_path, library)
         if song:
-            logger.info(f'Updated: path={relative_path}')
+            print(f'Updated: path={relative_path}')
             _import_song(library, metadata, song=song)
         else:
-            logger.info(f'Added: path={relative_path}')
+            print(f'Added: path={relative_path}')
             song = _import_song(library, metadata)
             session.add(song)
 
     session.commit()
 
 
+def delete(args):
+    from kyofu import session
+    from sqlalchemy import or_
+    from kyofu.util import show_proceed_prompt
+
+    name = args.library_name
+    prefix = args.prefix
+    library = Library.get_by_name(name)
+
+    query = session.query(Song)
+    query = query.filter(Song.library_id == library.library_id)
+    query = query.filter(
+        or_(Song.file_path.like(f'{h}%') for h in prefix)
+    )
+    query = query.order_by(Song.album_artist, Song.album)
+    delete_target = query.all()
+    if not delete_target:
+        print('Nothing to delete')
+        return
+
+    print('Target:')
+    for t in delete_target:
+        print(t.file_path)
+    if show_proceed_prompt('Delete continue?'):
+        for t in delete_target:
+            session.delete(t)
+        # We have already asked y/n so commit without prompt.
+        session.commit(force=True)
+
+
 def main():
+    from kyofu import current_config
+
     args = parse_args()
+    if args.yes:
+        current_config['auto_commit'] = args.yes
+
     args.func(args)
 
 

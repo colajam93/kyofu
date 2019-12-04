@@ -8,22 +8,6 @@ Base = declarative_base()
 sqla_metadata = Base.metadata
 
 
-class ExportableMixin:
-    def as_dict(self):
-        result = {}
-        if hasattr(self, 'exclude_column'):
-            exclude = set(self.exclude_column)
-        else:
-            exclude = set()
-
-        for m in self.__table__.columns:
-            key = m.key
-            if key in exclude:
-                continue
-            result[key] = getattr(self, key)
-        return result
-
-
 class Library(Base):
     __tablename__ = 'library'
 
