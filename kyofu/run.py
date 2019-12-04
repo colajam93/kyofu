@@ -113,7 +113,9 @@ def _full_sync(library: Library, overwrite: bool = False, path_hint: Iterable[st
 
 
 def init(args):
-    from kyofu import session
+    from kyofu import session, current_config
+
+    current_config['auto_commit'] = True
 
     base_path = Path(args.base_path).resolve()
     name = args.library_name
