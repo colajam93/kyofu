@@ -73,7 +73,7 @@ def _full_sync(library: Library, overwrite: bool = False, path_hint: Iterable[st
         query = session.query(Song)
         query = query.filter(Song.library_id == library.library_id)
         query = query.filter(
-            or_(Song.file_path.like(f'{h}%') for h in path_hint)
+            or_(Song.file_path.like(f'{h}%/%') for h in path_hint)
         )
         imported = {s.file_path: s for s in query.all()}
     else:
