@@ -1,7 +1,8 @@
-from kyofu.metadata import Metadata
 from pathlib import Path
-from kyofu.model import Song, Library
 from typing import Iterable
+
+from kyofu.metadata import Metadata
+from kyofu.model import Song, Library
 
 
 def parse_args():

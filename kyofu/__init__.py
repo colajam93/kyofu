@@ -1,10 +1,10 @@
 from logging import getLogger
 from logging.config import dictConfig
+from types import MethodType
 
 from kyofu.config import logger_config
-from kyofu.setup import setup_database_connection
 from kyofu.model import sqla_metadata
-from types import MethodType
+from kyofu.setup import setup_database_connection
 
 dictConfig(logger_config)
 

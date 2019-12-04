@@ -1,8 +1,9 @@
+from pathlib import Path
+
 from sqlalchemy import Column, DateTime, ForeignKey, String, text
 from sqlalchemy.dialects.mysql import INTEGER, SMALLINT
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from pathlib import Path
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 sqla_metadata = Base.metadata

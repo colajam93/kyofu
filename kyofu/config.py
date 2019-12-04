@@ -31,4 +31,3 @@ logger_config = {
         'handlers': ['null'],
     },
 }
-
