@@ -9,7 +9,7 @@ sqlacodegen = "*"
 [packages]
 mutagen = "*"
 sqlalchemy = "*"
-mysqlclient = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.8"

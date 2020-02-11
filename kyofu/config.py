@@ -1,6 +1,6 @@
 import os
 
-DB_DRIVER = os.getenv('DB_DRIVER', 'mysql+mysqldb')
+DB_DRIVER = os.getenv('DB_DRIVER', 'mysql+pymysql')
 DB_USER = os.getenv('DB_USER', 'kyofu')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'kyofu')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
