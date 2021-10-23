@@ -136,12 +136,7 @@ def scan(args):
     path_hint = args.path_hint
 
     library = Library.get_by_name(name)
-    if path_hint:
-        for h in path_hint:
-            hp = library.path / h
-            if not hp.exists():
-                raise FileNotFoundError(hp)
-    else:
+    if not path_hint:
         if not show_proceed_prompt('Full scan may take very long time. Continue?'):
             return
 
