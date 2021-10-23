@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-sqlacodegen = "*"
+sqlacodegen = ">=3.0.0b2"
 
 [packages]
 mutagen = "*"
@@ -13,3 +13,6 @@ pymysql = "*"
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

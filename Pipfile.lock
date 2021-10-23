@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f82e66b9b585b438d125f43e1292fe463037844aecfe41d82f9e150b4d2d393d"
+            "sha256": "a7346e0b3dbe75ff013a348382fd6d8a1b7410bb886f959c7c73a52531446456"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -69,7 +69,7 @@
                 "sha256:fa877ca7f6b48054f847b61d6fa7bed5cebb663ebc55e018fda12db09dcc664c",
                 "sha256:fdcec0b8399108577ec290f55551d926d9a1fa6cad45882093a7a07ac5ec147b"
             ],
-            "markers": "python_version >= '3' and (platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32'))))))",
+            "markers": "python_version >= '3' and platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32')))))",
             "version": "==1.1.2"
         },
         "mutagen": {
@@ -185,7 +185,7 @@
                 "sha256:fa877ca7f6b48054f847b61d6fa7bed5cebb663ebc55e018fda12db09dcc664c",
                 "sha256:fdcec0b8399108577ec290f55551d926d9a1fa6cad45882093a7a07ac5ec147b"
             ],
-            "markers": "python_version >= '3' and (platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32'))))))",
+            "markers": "python_version >= '3' and platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32')))))",
             "version": "==1.1.2"
         },
         "inflect": {
@@ -198,11 +198,11 @@
         },
         "sqlacodegen": {
             "hashes": [
-                "sha256:6122465c0842b2f50c04efcf0ea5f882663a50cd205391d006f2475981269ab5",
-                "sha256:f6ea38f815b330013548bb1f90158672f773d0b1fe97f61c117d291a70ab27de"
+                "sha256:74568ce3855ebd04b35f27c11eee671a8cc9c070389367807831f275957928bd",
+                "sha256:9976f36b04416877990436426b7f76cc905ad96b1ed92d1780c6432474d0a57d"
             ],
             "index": "pypi",
-            "version": "==2.3.0"
+            "version": "==3.0.0b2"
         },
         "sqlalchemy": {
             "hashes": [
