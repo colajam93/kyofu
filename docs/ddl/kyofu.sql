@@ -33,8 +33,8 @@ DROP TABLE IF EXISTS `library`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library` (
   `library_id` int(20) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `base_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `base_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`library_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -58,7 +58,7 @@ CREATE TABLE `song` (
   `disc_number` smallint(2) NOT NULL,
   `release_year` smallint(4) NOT NULL,
   `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `file_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`song_id`),
   UNIQUE KEY `u_song_1` (`file_path`),
   KEY `i_song_1` (`title`),
@@ -84,4 +84,4 @@ CREATE TABLE `song` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-10-24  3:53:44
+-- Dump completed on 2021-10-24  4:36:36
