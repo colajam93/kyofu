@@ -74,13 +74,14 @@ def _full_scan(path: Path, path_hint: Iterable[str]) -> Iterable[Path]:
 def _full_sync(library: Library, overwrite: bool = False, path_hint: Iterable[str] = None):
     from kyofu.metadata import load_metadata
     from kyofu import session
+    from kyofu.util import escape_for_like
     from sqlalchemy import or_
 
     if path_hint:
         query = session.query(Song)
         query = query.filter(Song.library_id == library.library_id)
         query = query.filter(
-            or_(Song.file_path.like(f'{h}%/%') for h in path_hint)
+            or_(Song.file_path.like(f'{escape_for_like(h)}%/%') for h in path_hint)
         )
         imported = {s.file_path: s for s in query.all()}
     else:
