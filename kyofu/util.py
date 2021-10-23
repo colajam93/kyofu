@@ -11,3 +11,9 @@ def show_proceed_prompt(message: str) -> bool:
     except EOFError:
         pass
     return False
+
+
+def escape_for_like(raw: str) -> str:
+    escaped = raw.replace('%', r'\%')
+    escaped = escaped.replace('_', r'\_')
+    return escaped
