@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.25-15, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.26-16, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: kyofu
 -- ------------------------------------------------------
--- Server version	8.0.18
+-- Server version	8.0.27
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS `library`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library` (
-  `library_id` int(20) NOT NULL AUTO_INCREMENT,
+  `library_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `base_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`library_id`),
@@ -48,16 +48,16 @@ DROP TABLE IF EXISTS `song`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `song` (
-  `song_id` int(20) NOT NULL AUTO_INCREMENT,
-  `library_id` int(20) NOT NULL,
+  `song_id` int NOT NULL AUTO_INCREMENT,
+  `library_id` int NOT NULL,
   `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `album` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `artist` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `album_artist` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `genre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `track_number` smallint(2) NOT NULL,
-  `disc_number` smallint(2) NOT NULL,
-  `release_year` smallint(4) NOT NULL,
+  `track_number` smallint NOT NULL,
+  `disc_number` smallint NOT NULL,
+  `release_year` smallint NOT NULL,
   `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `file_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`song_id`),
@@ -85,4 +85,4 @@ CREATE TABLE `song` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-10-24  4:48:28
+-- Dump completed on 2021-11-29  1:41:03
